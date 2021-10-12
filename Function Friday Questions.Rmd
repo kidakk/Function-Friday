@@ -24,14 +24,12 @@ Questions:
 
 1. Use the Titanic data set to count the number of 'a' in the names.
 
-2. Use any data set you like to filter out columns containing your favorite alphabet.
-
-3. Cande wants to translate the Titanic Data set from english to spanish. She needs to change the Sex variable from displaying ‘male’ and ‘female’ to display ‘masculino’ and femenino’. What code should she use? 
+2. Cande wants to translate the Titanic Data set from english to spanish. She needs to change the Sex variable from displaying ‘male’ and ‘female’ to display ‘masculino’ and femenino’. What code should she use? 
 *Note: Even when now we recognize the existence of a spectrum in sex and gender fuidity, at the time of the Titanic, there were only two sex categories. That is why we use those categories in the data set. 
 
-4. Create a new variable called ‘story’ that contains a string telling us the ticket string of each passenger with the following information:
+3. Create a new variable called ‘story’ that contains a string telling us the ticket string of each passenger with the following information:
 1) The name of the passenger 
 2) The ticket number
 
-5. Using the titanic_data provided above, using str_match() to find names that contain "Mrs.". Print out the first five names founded. 
+4. Using the titanic_data provided above, using str_match() to find names that contain "Mrs.". Print out the first five names founded. 
 
