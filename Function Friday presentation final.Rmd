@@ -1,0 +1,358 @@
+---
+title: "Function Friday presentation"
+author: "Cande, Sivhuo, Xuechen"
+date: "10/11/2021"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
+```
+
+```{r}
+library(titanic)
+library(tidyverse)
+library(dplyr)
+library(stringr)
+library(kableExtra)
+```
+
+# Stringr
+Stringr provides fast, correct implementations of common string manipulations. Here are the cheatsheet!
+
+![](Stringr1.png)
+![](Stringr2.png)
+
+## Titanic
+
+We are using the data from Titanic Train data!
+```{r}
+titanic = titanic_train
+```
+
+## str_count()
+The first function we will introduce is from the Detect Matches family - str_count. str_count(x, pattern) counts the number of patterns.
+
+* The first argument is the input vector 
+* The second argument is the pattern that we are looking to count
+
+```{r}
+pattern_titanic <- titanic %>% 
+  mutate(Name_pattern=str_count(Name, "[aeiou]")) %>% 
+  arrange(desc(Name_pattern)) %>% 
+  select(Name, Name_pattern) %>% 
+  head(5) %>% 
+  kbl() %>%
+  kable_styling()
+
+pattern_titanic
+```
+
+## str_locate()
+
+str_locate(x, pattern) gives the position of the match. First column gives start postion of match, and second column gives end position. 
+
+* The first argument is the input vector 
+* The second argument is the pattern that we want to figure out where the position is 
+
+```{r}
+locate_titanic <- str_locate(titanic$Name, "[aeiou]") %>% 
+  head(5) %>% 
+  kbl() %>%
+  kable_styling()
+
+locate_titanic
+```
+
+## str_wrap()
+str_wrap function wraps strings into nicely formatted paragraphs. Here is a Titanic fact and let's experiment with it. 
+
+* The first argument is the input character vector of strings to reformat. 
+* Positive integer giving target line width in characters. A width less than or equal to 1 will put each word on its own line.
+* exdent: non-negative integer giving indentation of following lines in each paragraph
+
+
+```{r}
+x <- "The Titanic was a luxury British steamship that sank in the early hours of April 15, 1912 after striking an iceberg, leading to the deaths of more than 1,500 passengers and crew."
+cat(str_wrap(x, width = 0, exdent = 2), "\n")
+```
+```{r}
+cat(str_wrap(x), "\n")
+```
+
+## str_trim()
+
+This function is useful for trimming white spaces at the beginning and ending of a string. 
+ 
+* The first argument is the string vector 
+* The second argument refer to where is the white space that we want to remove (left, right or both) 
+```{r}
+ticket <- " C2004  "
+str_trim(ticket, side= 'both')
+```
+
+## str_squish()
+We cannot remove whitespace in the middle by using str_trim() function. Thus, we have str_squish() that can remove whitespace from left and right sides of strings and collapses multiple spaces or space-like characters from the middle of the strings into a single space. 
+
+**str_squish(string)**
+
+Arguments: 
+* string: input vector. 
+
+```{r}
+rbind(
+  str_squish(" a     bbbbb cccccc  d    "),
+  str_squish("\n\nString \t\nwith all \tthis     \rspace   in it.\n\n")
+)
+```
+
+
+Cande:
+
+We covered 'str_sub()' in intro to data Science, but there are other useful functions in stringr that are worth mentioning. The following functions work by mutating the data set so they require the mutate() function. 
+
+## str_replace() & str_replace_all()
+
+'str_replace()' extracts __the first__ match pattern in the strings and replaces it. 'str_replace_all()' does the same with all the iterations of the pattern in the string.
+
+* The first argument is the input vector 
+* The second argument is the pattern that we are looking to replace.
+* The third argument is whatever we want to replace the pattern with. 
+
+```{r}
+# put the original name and modified one side by side
+sp_titanic <-titanic %>% 
+  mutate(Name = str_replace(Name, "Mrs.", "Sra."),
+         Name = str_replace(Name, "Mr.", "Sr."),
+         Name = str_replace(Name, "Miss.", "Srta."))
+
+
+sp_titanic_name <- sp_titanic %>% 
+  select(Name, PassengerId)
+
+titanic_name <- titanic %>% 
+  select(Name, PassengerId)
+
+replace_data <- sp_titanic_name %>% 
+  full_join(titanic_name, by = "PassengerId") %>% 
+  select(Name.x, Name.y) %>% 
+  as_tibble()
+  
+replace_data %>% 
+  head(5) %>% 
+  kbl() %>%
+  kable_styling() 
+  
+```
+
+## str_remove()
+
+It works similarly to 'str_replace()' because it searches for a pattern in a string vector, but instead of replacing it, it removes it. You can also use 'str_remove_all()' when there is more than one iteration of the same pattern to be removed from the string. 
+
+```{r}
+# put the original name and modified one side by side
+no_titles_TT<-titanic %>% 
+  mutate(Name = str_remove(Name, "Mrs."),
+         Name = str_remove(Name, "Mr."),
+         Name = str_remove(Name, "Miss."))
+
+no_titles_TT_name <- no_titles_TT %>% 
+  select(Name, PassengerId)
+
+remove_data <- no_titles_TT_name %>% 
+  full_join(titanic_name, by = "PassengerId") %>% 
+  select(Name.x, Name.y) %>% 
+  as_tibble()
+  
+remove_data %>% 
+  head(5) %>% 
+  kbl() %>%
+  kable_styling()
+```
+
+## str_dup() & str_unique()
+
+'str_dup()' duplicates stings while 'str_unique()' removes all duplicates. 
+
+* The first argument is the input vector (the name of the column where you plan to extract the string)
+* The second argument is the number of times you want to iterate. 
+
+For 'str_unique' we only need the vector input. 
+
+```{r}
+titanic_2 <-titanic%>% 
+  mutate(double= str_dup(Sex, 2))
+
+titanic_2 %>% 
+  select(Sex, double) %>% 
+  as_tibble() %>% 
+  head(5) %>% 
+  kbl() %>%
+  kable_styling()
+```
+
+## str_glue() and str_glue_data()
+
+These functions glue together separate string to make a sentence. 
+* the first argument is the expression. The arguments we give are taken to be expressions string(s) to format. Multiple inputs are concatenated together before formatting.
+* The second argument is __.sep__ or the separator used to separate elements.
+* The 3rd is __.envir__ This is the environment to evaluate each expression in. Expressions are evaluated from left to right
+
+```{r}
+glue_titanic <- titanic %>% 
+  mutate(story = str_glue("The Titanic's passenger called {name},",
+                          " had a passenger class number {Pclass}",
+                          " and was {age} years old",
+                           name= Name,
+                           Pclass = Pclass,
+                           age= Age)) %>% 
+  select(Name, Pclass, Age, story) 
+  
+glue_titanic %>% 
+  head(5) %>% 
+  kbl() %>%
+  kable_styling()
+```
+'str_glue_data()' works in a similar way when you want all the observations in each row presented in a sentence or string format. It is useful with data pipelines. Our data set would look confusing if we did this. 
+
+Siv:
+
+## str_subset()
+This function returns only the strings that contain a pattern match.
+
+**str_subset(string, pattern, negate = FALSE)**
+
+Arguments: 
+
+* string: input vector. 
+* pattern: pattern to look for. 
+* negate: if TRUE, return non-matching elements. 
+
+```{r}
+str_subset(titanic$Name, "Mr.") %>% 
+  head(5) %>% 
+  kbl() %>%
+  kable_styling()
+```
+```{r}
+str_subset(titanic$Name, "Miss") %>% 
+  head(5) %>% 
+  kbl() %>%
+  kable_styling()
+```
+
+We can also input regular expressions as the pattern to look for. For example, "^a" to find any string starting with an a. 
+
+```{r}
+str_subset(titanic$Name, "^A") %>% 
+  head(5) %>% 
+  kbl() %>%
+  kable_styling()
+```
+
+```{r}
+# Returns elements that do NOT match
+str_subset(titanic$Name, "^A", negate=TRUE) %>% 
+  head(5) %>% 
+  kbl() %>%
+  kable_styling()
+```
+
+## str_match()
+
+**str_match(string, pattern)**
+
+Arguments: 
+
+* string: input vector. 
+* pattern: pattern to look for. 
+  
+```{r}
+strings <- c(" 219 733 8965", "329-293-8753 ", "banana", "595 794 7569",
+  "387 287 6718", "apple", "233.398.9187  ", "482 952 3315",
+  "239 923 8115 and 842 566 4692", "Work: 579-499-7527", "$1000",
+  "Home: 543.355.3679")
+phone <- "([2-9][0-9]{2})[- .]([0-9]{3})[- .]([0-9]{4})"
+
+str_match(strings, phone)
+```
+
+## str_pad()
+It pads strings to constant width. 
+
+**str_pad(string, width, side = c("left", "right", "both"), pad="")**
+Arguments: 
+
+* string: a character vector. 
+* width: minimum width of padded strings. 
+* side: side on which padding character is added (left, right, both)
+* pad: single padding character (default is a space). 
+  
+```{r}
+str_pad(titanic$Name, 40, "left", "-") %>%  #pad on the left side with "-"
+  head(5)%>% 
+  kbl() %>%
+  kable_styling()
+```
+
+```{r}
+str_pad(titanic$Name, 40, "right", "#") %>% #pad on the right side with "-"
+  head(5)%>% 
+  kbl() %>%
+  kable_styling()
+```
+
+```{r}
+str_pad(titanic$Name, 40, "both", "*") %>%  #pad on both side with "-"
+  head(5)%>% 
+  kbl() %>%
+  kable_styling()
+```
+
+```{r}
+str_pad(titanic$Name, 40, "left") %>%  #default for 'pad' is a space
+  head(5)%>% 
+  kbl() %>%
+  kable_styling()
+```
+
+## str_trunc()
+It truncates a character string. 
+
+**str_trunc(string, width, side=c("right", "left", "center"), ellipsis = "...")**
+
+Arguments: 
+* string: a character vector. 
+* width: maximum width of string. 
+* side: location and content of ellipsis that indicates content has been removed. 
+  
+```{r}
+str_trunc(titanic$Name, 10, "left") %>%  #pad on the left side with "-"
+  head(5)%>% 
+  kbl() %>%
+  kable_styling()
+```
+
+```{r}
+str_trunc(titanic$Name, 10, "right") %>% #pad on the right side with "-"
+  head(5)%>% 
+  kbl() %>%
+  kable_styling()
+```
+
+```{r}
+str_trunc(titanic$Name, 10, "center") %>%  #pad on both side with "-"
+  head(5)%>% 
+  kbl() %>%
+  kable_styling()
+```
+
+```{r}
+str_trunc(titanic$Name, 10, "left") %>%  #default for 'pad' is a space
+  head(5)%>% 
+  kbl() %>%
+  kable_styling()
+```
+
+Our character string was cut off after the 7th character and the last three characters where replaced by dots. We can also specify which side (right, left, center) we want to truncate the string.
+
+
